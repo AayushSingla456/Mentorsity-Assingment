@@ -1,43 +1,73 @@
-// controllers/authController.js
-const userModel = require('../models/userModel');
+const bcrypt = require("bcrypt");
+const User = require("../models/user");
 
-module.exports = {
-  login: (req, res) => {
-    const { username, password } = req.body;
-    const user = userModel.getUser(username);
+const authController = {
+  signup: async (req, res) => {
+    try {
+      const { username, password } = req.body;
 
-    if (user && user.password === password) {
-      const sessionId = Math.random().toString(36).substring(7);
-      res.cookie('sessionId', sessionId, { httpOnly: true });
-      user.sessionId = sessionId;
-      res.json({ success: true, message: 'Login successful' });
-    } else {
-      res.status(401).json({ success: false, message: 'Invalid username or password' });
+      if (!username || !password) {
+        return res.status(400).send("Username and password are required.");
+      }
+
+      const newUser = new User({
+        username,
+        password,
+      });
+
+      await newUser.save();
+
+      res.status(201).send("User created successfully.");
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error");
     }
   },
 
-  signup: (req, res) => {
-    const { username, password } = req.body;
+  login: async (req, res) => {
+    try {
+      const { username, password } = req.body;
 
-    if (userModel.getUser(username)) {
-      res.status(400).json({ success: false, message: 'Username already exists' });
-    } else {
-      userModel.addUser(username, password);
-      res.json({ success: true, message: 'Signup successful. Please login.' });
+      const user = await User.findOne({ username });
+
+      if (!user) {
+        return res.status(401).send("Invalid username or password.");
+      }
+
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (!passwordMatch) {
+        return res.status(401).send("Invalid username or password.");
+      }
+
+      req.session.user = user;
+
+      res.status(200).send("Login successful.");
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error");
     }
   },
 
   logout: (req, res) => {
-    const { username } = req.body;
-    const user = userModel.getUser(username);
+    req.session.destroy((err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Internal Server Error");
+      }
 
-    if (user) {
-      // Clear the session ID and remove the cookie
-      user.sessionId = null;
-      res.clearCookie('sessionId');
-      res.json({ success: true, message: 'Logout successful' });
-    } else {
-      res.status(401).json({ success: false, message: 'User not found' });
+      res.clearCookie("connect.sid");
+      res.status(200).send("Logout successful.");
+    });
+  },
+
+  dashboard: (req, res) => {
+    if (!req.session.user) {
+      return res.status(401).send("Unauthorized");
     }
+
+    res.status(200).send(`Welcome, ${req.session.user.username}!`);
   },
 };
+
+module.exports = authController;
