@@ -19,7 +19,7 @@ Make sure you have the following installed on your machine:
 2.Plz add the .ENV file or i have commented the MONGO_URI in the server.js use that .
 3. nodemon server.js / node server.js
 
-API Endpoints
+###API Endpoints
 1. Sign Up
 URL: /signup
 Method: POST
