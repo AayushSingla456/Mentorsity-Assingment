@@ -1,6 +1,6 @@
-# Express-Mongoose-Bcrypt-Session-MVC
+# MENTORSITY ASSINGMENT
 
-This is a simple Express.js application with MongoDB, Bcrypt for password hashing, and Session for user authentication. The code is structured using the MVC (Model-View-Controller) pattern.
+Task-Create a session id for the user who has logged in to website . Please create a session and cookies in node js with login signup api's.
 
 ## Getting Started
 
@@ -16,6 +16,7 @@ Make sure you have the following installed on your machine:
 ### Installation
 
 1.npm install
+
 2.Plz add the .ENV file or i have commented the MONGO_URI in the server.js use that .
 3. nodemon server.js / node server.js
 
